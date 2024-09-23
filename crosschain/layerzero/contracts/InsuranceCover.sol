@@ -317,6 +317,10 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         return userCovers[user][_coverId];
     }
 
+    function getCoverInfo(uint256 _coverId) external view returns (CoverLib.Cover memory) {
+        return covers[_coverId];
+    }
+
     function updateUserCoverValue(address user, uint256 _coverId, uint256 _claimPaid) public onlyGovernance nonReentrant {
         userCovers[user][_coverId].coverValue -= _claimPaid;
         userCovers[user][_coverId].claimPaid += _claimPaid;
