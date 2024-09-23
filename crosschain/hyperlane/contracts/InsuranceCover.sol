@@ -342,6 +342,10 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
         }
     }
 
+    function getCoverInfo(uint256 _coverId) external view returns (CoverLib.Cover memory) {
+        return covers[_coverId];
+    }
+
     function getCoverFeeBalance() external view returns (uint256) {
         return coverFeeBalance;
     }
