@@ -241,6 +241,32 @@ contract Governance is ReentrancyGuard, Ownable {
         return result;
     }
 
+        function getActiveProposals() public view returns (Proposal[] memory) {
+        Proposal[] memory result = new Proposal[](proposalIds.length);
+        for (uint256 i = 0; i < proposalIds.length; i++) {
+            if (proposals[proposalIds[i]].status == ProposalStaus.Submitted || proposals[proposalIds[i]].deadline >= block.timestamp) {
+                result[i] = proposals[proposalIds[i]];
+                if (block.timestamp == result[i].deadline) {
+                    result[i].timeleft = 0;
+                } else {
+                    result[i].timeleft = (result[i].deadline - block.timestamp) / 1 minutes;
+                }
+            }
+        }
+        return result;
+    }
+
+    function getPastProposals() public view returns (Proposal[] memory) {
+        Proposal[] memory result = new Proposal[](proposalIds.length);
+        for (uint256 i = 0; i < proposalIds.length; i++) {
+            if (proposals[proposalIds[i]].status != ProposalStaus.Submitted && proposals[proposalIds[i]].deadline < block.timestamp) {
+                result[i] = proposals[proposalIds[i]];
+                result[i].timeleft = 0;
+            }
+        }
+        return result;
+    }
+
     function setCoverContract(address _coverContract) external onlyOwner {
         require(coverContract == address(0), "Governance already set");
         require(
