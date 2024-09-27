@@ -5,11 +5,12 @@ const DECIMALS = 18;
 const INITIAL_SUPPLY = 200000000000000;
 const NAME = "BitQuid";
 const SYMBOL = "BQ";
-const MAILBOX = "";
-const DESTINATION_DOMAIN = "";
+const MAILBOX = "0x54148470292C24345fb828B003461a9444414517";
+const DESTINATION_DOMAIN = 80002;
+const ISM = "0x12ecb319c7f4e8ac5eb5226662aeb8528c5cefac";
 
-const POOL = "";
-const COVER = "";
+const POOL = "0x290946a5f508530023e08260B67957f408D6dB75";
+const COVER = "0xFDf473d5F84182d58CD6008edF0DF97D8bd113e4";
 
 async function main() {
   console.log("Deploying on origin chain...");
@@ -24,8 +25,8 @@ async function main() {
     const Governance = await ethers.getContractFactory("Governance");
     const governance = await Governance.deploy(
       MAILBOX,
-      GOVTOKEN,
-      poolAddress,
+      tokenAddress,
+      POOL,
       5,
       OWNER,
       DESTINATION_DOMAIN
@@ -37,9 +38,17 @@ async function main() {
     console.log("Setting contracts...");
 
     await governance.setCoverContract(COVER);
+    await governance.setInterchainSecurityModule(ISM);
 
     console.log("All contracts set");
   } catch (error) {
     console.error("An error occurred:", error);
   }
 }
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

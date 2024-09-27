@@ -422,8 +422,8 @@
       ]
     },
     "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\Gov.sol": {
-      "lastModificationDate": 1727373686813,
-      "contentHash": "926e984c7dbb0741c2cb7966928e3403",
+      "lastModificationDate": 1727420089218,
+      "contentHash": "3abd6f056336c8bb5d02d4bdba67af34",
       "sourceName": "contracts/Gov.sol",
       "solcConfig": {
         "version": "0.8.27",
