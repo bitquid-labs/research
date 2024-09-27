@@ -1,0 +1,660 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\CoverLib.sol": {
+      "lastModificationDate": 1727093187054,
+      "contentHash": "0be612ae088ca14a4195108e98a5e345",
+      "sourceName": "contracts/CoverLib.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "CoverLib"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\InsurancePool.sol": {
+      "lastModificationDate": 1727350286821,
+      "contentHash": "55a865e2050d6dffe8fa9b97981775a6",
+      "sourceName": "contracts/InsurancePool.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./libraries/openzeppelin/IERC20.sol",
+        "./libraries/openzeppelin/Ownable.sol",
+        "./libraries/openzeppelin/ReentrancyGuard.sol",
+        "./libraries/hyperlane/IMessageRecipient.sol",
+        "./libraries/hyperlane/IMailbox.sol",
+        "./libraries/hyperlane/IInterchainSecurityModule.sol",
+        "./CoverLib.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ICover",
+        "InsurancePool"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\IERC20.sol": {
+      "lastModificationDate": 1727075049534,
+      "contentHash": "e1baf418618cae25e812193e3ed4e27a",
+      "sourceName": "contracts/libraries/openzeppelin/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\Ownable.sol": {
+      "lastModificationDate": 1727075062867,
+      "contentHash": "6a4c500391045d12f1ea5aca6d92653f",
+      "sourceName": "contracts/libraries/openzeppelin/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\ReentrancyGuard.sol": {
+      "lastModificationDate": 1727075172765,
+      "contentHash": "13237a9206fbd1b3aebfafe2d6bb9065",
+      "sourceName": "contracts/libraries/openzeppelin/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\hyperlane\\IMessageRecipient.sol": {
+      "lastModificationDate": 1727080808086,
+      "contentHash": "41ab9491a9c4f21613555e09bba58a46",
+      "sourceName": "contracts/libraries/hyperlane/IMessageRecipient.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IMessageRecipient"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\hyperlane\\IInterchainSecurityModule.sol": {
+      "lastModificationDate": 1727079394274,
+      "contentHash": "6a6486335fa8d2bb688325995104b688",
+      "sourceName": "contracts/libraries/hyperlane/IInterchainSecurityModule.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IInterchainSecurityModule",
+        "ISpecifiesInterchainSecurityModule"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\hyperlane\\IMailbox.sol": {
+      "lastModificationDate": 1727079428222,
+      "contentHash": "2518b3c95e0d2ade934ecbf0b9377f8e",
+      "sourceName": "contracts/libraries/hyperlane/IMailbox.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IInterchainSecurityModule.sol",
+        "./IPostDispatchHook.sol"
+      ],
+      "versionPragmas": [
+        ">=0.8.0"
+      ],
+      "artifacts": [
+        "IMailbox"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\Context.sol": {
+      "lastModificationDate": 1727075035497,
+      "contentHash": "0891a19219aa837c0a9c9209dcbfe375",
+      "sourceName": "contracts/libraries/openzeppelin/Context.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\hyperlane\\IPostDispatchHook.sol": {
+      "lastModificationDate": 1727079438933,
+      "contentHash": "f2c2810a8d44709bee7f3e154454a490",
+      "sourceName": "contracts/libraries/hyperlane/IPostDispatchHook.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.8.0"
+      ],
+      "artifacts": [
+        "IPostDispatchHook"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\InsuranceCover.sol": {
+      "lastModificationDate": 1727373409137,
+      "contentHash": "3e7faf8aa3e21921eba805716ce2f35f",
+      "sourceName": "contracts/InsuranceCover.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./libraries/openzeppelin/IERC20.sol",
+        "./libraries/openzeppelin/Ownable.sol",
+        "./libraries/openzeppelin/ReentrancyGuard.sol",
+        "./libraries/hyperlane/IMessageRecipient.sol",
+        "./libraries/hyperlane/IMailbox.sol",
+        "./libraries/hyperlane/IInterchainSecurityModule.sol",
+        "./CoverLib.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ILP",
+        "InsuranceCover"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\Gov.sol": {
+      "lastModificationDate": 1727373686813,
+      "contentHash": "926e984c7dbb0741c2cb7966928e3403",
+      "sourceName": "contracts/Gov.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./libraries/openzeppelin/IERC20.sol",
+        "./libraries/openzeppelin/Ownable.sol",
+        "./libraries/openzeppelin/ReentrancyGuard.sol",
+        "./libraries/hyperlane/IMessageRecipient.sol",
+        "./libraries/hyperlane/IMailbox.sol",
+        "./libraries/hyperlane/IInterchainSecurityModule.sol",
+        "./CoverLib.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Governance"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\ERC20\\ERC20.sol": {
+      "lastModificationDate": 1727416330891,
+      "contentHash": "5fb20736e7d1ec7b686f25f4e40cd514",
+      "sourceName": "contracts/libraries/openzeppelin/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./extensions/IERC20Metadata.sol",
+        "../Context.sol",
+        "./draft-IERC6093.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\ERC20\\IERC20.sol": {
+      "lastModificationDate": 1727372399689,
+      "contentHash": "5517c8678c18eb1a8ba58810e7ca39ca",
+      "sourceName": "contracts/libraries/openzeppelin/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\ERC20\\extensions\\IERC20Metadata.sol": {
+      "lastModificationDate": 1727372399696,
+      "contentHash": "4c02fa6f7ae7b6c289cef80424f0c875",
+      "sourceName": "contracts/libraries/openzeppelin/ERC20/extensions/IERC20Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC20Metadata"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\libraries\\openzeppelin\\ERC20\\draft-IERC6093.sol": {
+      "lastModificationDate": 1727416254298,
+      "contentHash": "7c5b75b18b03aa515bbd8052af924e1c",
+      "sourceName": "contracts/libraries/openzeppelin/ERC20/draft-IERC6093.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
+      ]
+    },
+    "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\MockERC20.sol": {
+      "lastModificationDate": 1727372521652,
+      "contentHash": "584de2428480610e83a12cb63723baa1",
+      "sourceName": "contracts/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.8.27",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./libraries/openzeppelin/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "MockERC20"
+      ]
+    }
+  }
+}

@@ -15,6 +15,7 @@ contract Governance is ReentrancyGuard, IMessageRecipient, Ownable {
     uint256 public votingDuration;
     uint256 public destinationDomain;
     mapping(uint256 => CoverLib.Proposal) public proposals;
+    mapping(address => mapping(uint256 => CoverLib.GenericCoverInfo)) public userCovers;
     mapping(uint256 => mapping(address => CoverLib.Voter)) public voters;
     uint256[] public proposalIds;
     mapping (uint256 => bool) poolStatus;
@@ -62,6 +63,8 @@ contract Governance is ReentrancyGuard, IMessageRecipient, Ownable {
     }
 
     function createProposal(CoverLib.ProposalParams memory params) external {
+        CoverLib.GenericCoverInfo memory userCover = userCovers[params.user][params.coverId];
+        require(params.claimAmount <= userCover.coverValue, "Not sufficient cover value for claim");
         require(poolStatus[params.poolId], "Pool does not exist");
         require(params.claimAmount > 0, "Claim amount must be greater than 0");
 
@@ -191,31 +194,49 @@ contract Governance is ReentrancyGuard, IMessageRecipient, Ownable {
         return result;
     }
 
-        function getActiveProposals() public view returns (CoverLib.Proposal[] memory) {
-        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](proposalIds.length);
+    function getActiveProposals() public view returns (CoverLib.Proposal[] memory) {
+        uint256 activeCount = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
-            if (proposals[proposalIds[i]].status == CoverLib.ProposalStaus.Submitted || proposals[proposalIds[i]].deadline >= block.timestamp) {
-                result[i] = proposals[proposalIds[i]];
-                if (block.timestamp == result[i].deadline) {
-                    result[i].timeleft = 0;
+            if (proposals[proposalIds[i]].deadline == 0 || proposals[proposalIds[i]].deadline > block.timestamp) {
+                activeCount++;
+            }
+        }
+
+        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](activeCount);
+        uint256 index = 0;
+        for (uint256 i = 0; i < proposalIds.length; i++) {
+            if (proposals[proposalIds[i]].deadline == 0 || proposals[proposalIds[i]].deadline >= block.timestamp) {
+                result[index] = proposals[proposalIds[i]];
+                if (block.timestamp == result[index].deadline || proposals[proposalIds[i]].status == CoverLib.ProposalStaus.Submitted) {
+                    result[index].timeleft = 0;
                 } else {
-                    result[i].timeleft = (result[i].deadline - block.timestamp) / 1 minutes;
+                    result[index].timeleft = (result[index].deadline - block.timestamp) / 1 minutes;
                 }
+                index++;
             }
         }
         return result;
     }
 
     function getPastProposals() public view returns (CoverLib.Proposal[] memory) {
-        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](proposalIds.length);
+        uint256 pastCount = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
             if (proposals[proposalIds[i]].status != CoverLib.ProposalStaus.Submitted && proposals[proposalIds[i]].deadline < block.timestamp) {
-                result[i] = proposals[proposalIds[i]];
-                result[i].timeleft = 0;
+                pastCount++;
+            }
+        }
+        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](pastCount);
+        uint256 index = 0;
+        for (uint256 i = 0; i < proposalIds.length; i++) {
+            if (proposals[proposalIds[i]].status != CoverLib.ProposalStaus.Submitted && proposals[proposalIds[i]].deadline < block.timestamp) {
+                result[index] = proposals[proposalIds[i]];
+                result[index].timeleft = 0;
+                index++;
             }
         }
         return result;
     }
+
 
     function setCoverContract(address _coverContract) external onlyOwner {
         require(coverContract == address(0), "Governance already set");
@@ -262,6 +283,11 @@ contract Governance is ReentrancyGuard, IMessageRecipient, Ownable {
         if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("PoolDeactivated"))) {
             uint256 poolId = abi.decode(param, (uint256));
             poolStatus[poolId] = false;
+        }
+
+        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("UserCover"))) {
+            (address user, uint256 coverId, CoverLib.GenericCoverInfo memory coverInfo) = abi.decode(param, (address, uint256, CoverLib.GenericCoverInfo));
+            userCovers[user][coverId] = coverInfo;
         }
 
         emit ReceivedMessage(_origin, _sender, string(_message));
