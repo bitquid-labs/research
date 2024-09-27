@@ -83,6 +83,7 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
     address public mailboxAddress;
     address public lpAddress;
     address public governance;
+    uint32 public destinationDomain;
 
     mapping(uint256 => bool) public coverExists;
     mapping(address => mapping (uint256 => uint256)) public NextLpClaimTime;
@@ -284,6 +285,11 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
             userCover.endDay += (userCover.coverPeriod * 1 days);
         }
 
+        mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
+                userCover.user,
+                userCover.coverId,
+                userCover
+            )));
         coverFeeBalance += msg.value;
 
         emit CoverPurchased(msg.sender, _coverValue, msg.value, cover.riskType);
@@ -330,6 +336,12 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
     function updateUserCoverValue(address user, uint256 _coverId, uint256 _claimPaid) public onlyMailboxOrGovernance nonReentrant {
         userCovers[user][_coverId].coverValue -= _claimPaid;
         userCovers[user][_coverId].claimPaid += _claimPaid;
+
+        mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
+                user,
+                _coverId,
+                userCovers[user][_coverId]
+            )));
     }
 
     function deleteExpiredUserCovers(address _user) external nonReentrant {
@@ -339,6 +351,12 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
                 userCover.isActive = false;
                 delete userCovers[_user][i];
             }
+
+            mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
+                _user,
+                i,
+                userCovers[_user][i]
+            )));
         }
     }
 
@@ -435,6 +453,14 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, Ownable {
     modifier onlyPool() {
         require(msg.sender == lpAddress, "Not authorized");
         _;
+    }
+
+    function addressToBytes32(address _addr) internal pure returns (bytes32) {
+        return bytes32(uint256(uint160(_addr)));
+    }
+
+    function setDestinationDomain(uint32 _destinationDomain) external onlyOwner {
+        destinationDomain = _destinationDomain;
     }
 
     function handle(uint32 _origin, bytes32 _sender, bytes memory _message) external payable override {
