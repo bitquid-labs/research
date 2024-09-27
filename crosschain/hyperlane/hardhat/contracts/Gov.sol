@@ -242,6 +242,9 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         return result;
     }
 
+    function poolActive(uint256 poolId) public view returns (bool) {
+        return poolStatus[poolId];
+    }
 
     function setCoverContract(address _coverContract) external onlyOwner {
         require(coverContract == address(0), "Governance already set");
