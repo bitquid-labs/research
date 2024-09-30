@@ -9,8 +9,8 @@ use std::env;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let gov = "0xD80690394aAC140E8B42CE2eC42de51c8a7a0e39";
-    let rpc = "https://eth-sepolia.g.alchemy.com/v2/VtFb4uQ7Vc5l414EGwXDDzcSClkHv9TY";
+    let gov = "0x328d42318A8f15B0fb05437d52B6200A0255257D";
+    let rpc = "https://rpc-amoy.polygon.technology/";
     let owner = "0xDA01D79Ca36b493C7906F3C032D2365Fb3470aEC";
 
     let _owner = Address::from_str(owner).expect("Error from owner address");

@@ -59,14 +59,33 @@ interface ILP {
             uint256 percentageSplitBalance
         );
 
-        function reducePercentageSplit(uint256 _poolId,uint256 __poolPercentageSplit) external ;
-        function increasePercentageSplit(uint256 _poolId,uint256 __poolPercentageSplit) external ;
-        function addPoolCover(uint256 _poolId, CoverLib.Cover memory _cover) external ;
-        function updatePoolCovers(uint256 _poolId, CoverLib.Cover memory _cover) external ;
-        function getPoolCovers(uint256 _poolId) external view returns (CoverLib.Cover[] memory);
+    function reducePercentageSplit(
+        uint256 _poolId,
+        uint256 __poolPercentageSplit
+    ) external;
+    function increasePercentageSplit(
+        uint256 _poolId,
+        uint256 __poolPercentageSplit
+    ) external;
+    function addPoolCover(
+        uint256 _poolId,
+        CoverLib.Cover memory _cover
+    ) external;
+    function updatePoolCovers(
+        uint256 _poolId,
+        CoverLib.Cover memory _cover
+    ) external;
+    function getPoolCovers(
+        uint256 _poolId
+    ) external view returns (CoverLib.Cover[] memory);
 }
 
-contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainSecurityModule, Ownable {
+contract InsuranceCover is
+    ReentrancyGuard,
+    IMessageRecipient,
+    ISpecifiesInterchainSecurityModule,
+    Ownable
+{
     using CoverLib for *;
     error LpNotActive();
     error InsufficientPoolBalance();
@@ -88,9 +107,10 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
     IInterchainSecurityModule public interchainSecurityModule;
 
     mapping(uint256 => bool) public coverExists;
-    mapping(address => mapping (uint256 => uint256)) public NextLpClaimTime;
+    mapping(address => mapping(uint256 => uint256)) public NextLpClaimTime;
 
-    mapping(address => mapping(uint256 => CoverLib.GenericCoverInfo)) public userCovers;
+    mapping(address => mapping(uint256 => CoverLib.GenericCoverInfo))
+        public userCovers;
     mapping(uint256 => CoverLib.Cover) public covers;
 
     uint256 public coverCount;
@@ -100,10 +120,7 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         bytes32 indexed sender,
         string message
     );
-    event CoverCreated(
-        string name,
-        CoverLib.RiskType riskType
-    );
+    event CoverCreated(string name, CoverLib.RiskType riskType);
     event CoverPurchased(
         address indexed user,
         uint256 coverValue,
@@ -125,13 +142,15 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         address _mailbox,
         address _lpContract,
         address _initialOwner,
+        address _ism,
         uint32 _destinationDomain
     ) Ownable(_initialOwner) {
         mailbox = IMailbox(_mailbox);
         mailboxAddress = _mailbox;
         lpContract = ILP(_lpContract);
         lpAddress = _lpContract;
-        destinationDomain = uint32(_destinationDomain);
+        destinationDomain = _destinationDomain;
+        interchainSecurityModule = IInterchainSecurityModule(_ism);
     }
 
     function createCover(
@@ -143,24 +162,37 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         uint256 _cost,
         uint256 _poolId
     ) public onlyOwner {
-        CoverLib.Cover[] memory coversInPool = lpContract.getPoolCovers(_poolId);
+        CoverLib.Cover[] memory coversInPool = lpContract.getPoolCovers(
+            _poolId
+        );
         for (uint256 i = 0; i < coversInPool.length; i++) {
-            if (keccak256(abi.encodePacked(coversInPool[i].coverName)) == keccak256(abi.encodePacked(_coverName))) {
+            if (
+                keccak256(abi.encodePacked(coversInPool[i].coverName)) ==
+                keccak256(abi.encodePacked(_coverName))
+            ) {
                 revert NameAlreadyExists();
             }
         }
-        (, CoverLib.RiskType risk, , , uint256 tvl, , uint256 _percentageSplitBalance) = lpContract.getPool(_poolId);
+        (
+            ,
+            CoverLib.RiskType risk,
+            ,
+            ,
+            uint256 tvl,
+            ,
+            uint256 _percentageSplitBalance
+        ) = lpContract.getPool(_poolId);
 
         if (risk != _riskType || _capacity > _percentageSplitBalance) {
             revert WrongPool();
         }
 
-        uint256 _maxAmount = tvl * (_capacity * 1e18 / 100) / 1e18;
+        uint256 _maxAmount = (tvl * ((_capacity * 1e18) / 100)) / 1e18;
 
         lpContract.reducePercentageSplit(_poolId, _capacity);
 
         coverCount++;
-        CoverLib.Cover memory cover =  CoverLib.Cover({
+        CoverLib.Cover memory cover = CoverLib.Cover({
             id: coverCount,
             coverName: _coverName,
             riskType: _riskType,
@@ -182,32 +214,45 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
 
     function updateCover(
         uint256 _coverId,
-        string memory _coverName, 
-        CoverLib.RiskType _riskType, 
+        string memory _coverName,
+        CoverLib.RiskType _riskType,
         string memory _cid,
         string memory _chains,
         uint256 _capacity,
         uint256 _cost,
         uint256 _poolId
-        ) public onlyOwner {
-        (, CoverLib.RiskType risk, , , uint256 tvl, , uint256 _percentageSplitBalance) = lpContract.getPool(_poolId);
-        
+    ) public onlyOwner {
+        (
+            ,
+            CoverLib.RiskType risk,
+            ,
+            ,
+            uint256 tvl,
+            ,
+            uint256 _percentageSplitBalance
+        ) = lpContract.getPool(_poolId);
+
         if (risk != _riskType || _capacity > _percentageSplitBalance) {
             revert WrongPool();
         }
 
         CoverLib.Cover storage cover = covers[_coverId];
 
-        uint256 _maxAmount = tvl * (_capacity * 1e18 / 100) / 1e18;
+        uint256 _maxAmount = (tvl * ((_capacity * 1e18) / 100)) / 1e18;
 
         if (cover.coverValues > _maxAmount) {
             revert WrongPool();
         }
 
-        CoverLib.Cover[] memory coversInPool = lpContract.getPoolCovers(_poolId);
+        CoverLib.Cover[] memory coversInPool = lpContract.getPoolCovers(
+            _poolId
+        );
         for (uint256 i = 0; i < coversInPool.length; i++) {
-            if (keccak256(abi.encodePacked(coversInPool[i].coverName)) == keccak256(abi.encodePacked(_coverName)) &&
-                coversInPool[i].id != _coverId) {
+            if (
+                keccak256(abi.encodePacked(coversInPool[i].coverName)) ==
+                keccak256(abi.encodePacked(_coverName)) &&
+                coversInPool[i].id != _coverId
+            ) {
                 revert NameAlreadyExists();
             }
         }
@@ -266,8 +311,10 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         cover.maxAmount = cover.capacityAmount - newCoverValues;
 
         cover.maxAmount = (cover.capacityAmount - cover.coverValues);
-        CoverLib.GenericCoverInfo storage userCover = userCovers[msg.sender][_coverId];
-        
+        CoverLib.GenericCoverInfo storage userCover = userCovers[msg.sender][
+            _coverId
+        ];
+
         if (userCover.coverValue == 0) {
             userCovers[msg.sender][_coverId] = CoverLib.GenericCoverInfo({
                 user: msg.sender,
@@ -281,24 +328,39 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
                 isActive: true
             });
         } else {
-            require((userCover.coverPeriod + _coverPeriod) < 366, "Total cover period must be less than 365");
+            require(
+                (userCover.coverPeriod + _coverPeriod) < 366,
+                "Total cover period must be less than 365"
+            );
             userCover.coverValue += _coverValue;
             userCover.coverPeriod += _coverPeriod;
             userCover.endDay += (userCover.coverPeriod * 1 days);
         }
 
-        mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
-                userCover.user,
-                userCover.coverId,
-                userCover
-            )));
+        bytes memory body = abi.encode(
+            "UserCover",
+            abi.encode(userCover.user, userCover.coverId, userCover)
+        );
+        uint256 fee = mailbox.quoteDispatch(
+            destinationDomain,
+            addressToBytes32(governance),
+            body
+        );
+        mailbox.dispatch{value: fee}(
+            destinationDomain,
+            addressToBytes32(governance),
+            body
+        );
         coverFeeBalance += msg.value;
 
         emit CoverPurchased(msg.sender, _coverValue, msg.value, cover.riskType);
     }
 
-    function getAllUserCovers(address user) external view returns (CoverLib.GenericCoverInfo[] memory) {
-        CoverLib.GenericCoverInfo[] memory userCoverList = new CoverLib.GenericCoverInfo[](coverCount);
+    function getAllUserCovers(
+        address user
+    ) external view returns (CoverLib.GenericCoverInfo[] memory) {
+        CoverLib.GenericCoverInfo[]
+            memory userCoverList = new CoverLib.GenericCoverInfo[](coverCount);
         uint256 actualCount = 0;
 
         for (uint256 i = 1; i <= coverCount; i++) {
@@ -315,8 +377,14 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         return userCoverList;
     }
 
-    function getAllAvailableCovers() external view returns (CoverLib.Cover[] memory) {
-        CoverLib.Cover[] memory availableCovers = new CoverLib.Cover[](coverCount);
+    function getAllAvailableCovers()
+        external
+        view
+        returns (CoverLib.Cover[] memory)
+    {
+        CoverLib.Cover[] memory availableCovers = new CoverLib.Cover[](
+            coverCount
+        );
         uint256 actualCount = 0;
 
         for (uint256 i = 1; i <= coverCount; i++) {
@@ -331,22 +399,40 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         return availableCovers;
     }
 
-    function getUserCoverInfo(address user, uint256 _coverId) external view returns (CoverLib.GenericCoverInfo memory) {
+    function getUserCoverInfo(
+        address user,
+        uint256 _coverId
+    ) external view returns (CoverLib.GenericCoverInfo memory) {
         return userCovers[user][_coverId];
     }
 
-    function updateUserCoverValue(address user, uint256 _coverId, uint256 _claimPaid) public onlyMailboxOrGovernance nonReentrant {
+    function updateUserCoverValue(
+        address user,
+        uint256 _coverId,
+        uint256 _claimPaid
+    ) public payable onlyMailboxOrGovernance nonReentrant {
         userCovers[user][_coverId].coverValue -= _claimPaid;
         userCovers[user][_coverId].claimPaid += _claimPaid;
 
-        mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
-                user,
-                _coverId,
-                userCovers[user][_coverId]
-            )));
+        bytes memory body = abi.encode(
+            "UserCover",
+            abi.encode(user, _coverId, userCovers[user][_coverId])
+        );
+        uint256 fee = mailbox.quoteDispatch(
+            destinationDomain,
+            addressToBytes32(governance),
+            body
+        );
+        mailbox.dispatch{value: fee}(
+            destinationDomain,
+            addressToBytes32(governance),
+            body
+        );
     }
 
-    function deleteExpiredUserCovers(address _user) external nonReentrant {
+    function deleteExpiredUserCovers(
+        address _user
+    ) external payable nonReentrant {
         for (uint256 i = 1; i <= coverCount; i++) {
             CoverLib.GenericCoverInfo storage userCover = userCovers[_user][i];
             if (userCover.isActive && block.timestamp > userCover.endDay) {
@@ -354,15 +440,26 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
                 delete userCovers[_user][i];
             }
 
-            mailbox.dispatch(uint32(destinationDomain), addressToBytes32(governance), abi.encode("UserCover", abi.encode(
-                _user,
-                i,
-                userCovers[_user][i]
-            )));
+            bytes memory body = abi.encode(
+                "UserCover",
+                abi.encode(_user, i, userCovers[_user][i])
+            );
+            uint256 fee = mailbox.quoteDispatch(
+                destinationDomain,
+                addressToBytes32(governance),
+                body
+            );
+            mailbox.dispatch{value: fee}(
+                destinationDomain,
+                addressToBytes32(governance),
+                body
+            );
         }
     }
 
-    function getCoverInfo(uint256 _coverId) external view returns (CoverLib.Cover memory) {
+    function getCoverInfo(
+        uint256 _coverId
+    ) external view returns (CoverLib.Cover memory) {
         return covers[_coverId];
     }
 
@@ -380,17 +477,21 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         (, , , , uint256 tvl, , ) = lpContract.getPool(cover.poolId);
         require(tvl > 0, "TVL is zero");
         require(cover.capacity > 0, "Invalid cover capacity");
-        uint256 amount = tvl * (cover.capacity * 1e18 / 100) / 1e18;
+        uint256 amount = (tvl * ((cover.capacity * 1e18) / 100)) / 1e18;
         covers[_coverId].capacityAmount = amount;
-        covers[_coverId].maxAmount = (covers[_coverId].capacityAmount - covers[_coverId].coverValues);
+        covers[_coverId].maxAmount = (covers[_coverId].capacityAmount -
+            covers[_coverId].coverValues);
     }
 
     function claimPayoutForLP(uint256 _poolId) external nonReentrant {
-        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(_poolId, msg.sender);
+        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(
+            _poolId,
+            msg.sender
+        );
         if (depositInfo.status != ILP.Status.Active) {
             revert LpNotActive();
         }
-        
+
         uint256 lastClaimTime;
         if (NextLpClaimTime[msg.sender][_poolId] == 0) {
             lastClaimTime = depositInfo.startDate;
@@ -425,8 +526,14 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         emit PayoutClaimed(msg.sender, _poolId, claimableAmount);
     }
 
-    function getDepositClaimableDays(address user, uint256 _poolId) public view returns (uint256) {
-        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(_poolId, user);
+    function getDepositClaimableDays(
+        address user,
+        uint256 _poolId
+    ) public view returns (uint256) {
+        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(
+            _poolId,
+            user
+        );
 
         uint256 lastClaimTime;
         if (NextLpClaimTime[user][_poolId] == 0) {
@@ -443,9 +550,12 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         return claimableDays;
     }
 
-    function getLastClaimTime(address user, uint256 _poolId)public view returns (uint256) {
+    function getLastClaimTime(
+        address user,
+        uint256 _poolId
+    ) public view returns (uint256) {
         return NextLpClaimTime[user][_poolId];
-    } 
+    }
 
     function setGovernance(address _governance) external onlyOwner {
         require(governance == address(0), "Governance already set");
@@ -454,7 +564,10 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
     }
 
     modifier onlyMailboxOrGovernance() {
-        require(msg.sender == mailboxAddress || msg.sender == governance, "Not authorized");
+        require(
+            msg.sender == mailboxAddress || msg.sender == governance,
+            "Not authorized"
+        );
         _;
     }
 
@@ -467,23 +580,34 @@ contract InsuranceCover is ReentrancyGuard, IMessageRecipient, ISpecifiesInterch
         return bytes32(uint256(uint160(_addr)));
     }
 
-    function setDestinationDomain(uint32 _destinationDomain) external onlyOwner {
+    function setDestinationDomain(
+        uint32 _destinationDomain
+    ) external onlyOwner {
         destinationDomain = _destinationDomain;
-    }
-
-    function setInterchainSecurityModule(address _ism) external onlyOwner {
-        interchainSecurityModule = IInterchainSecurityModule(_ism);
     }
 
     receive() external payable {}
 
-    function handle(uint32 _origin, bytes32 _sender, bytes memory _message) external payable override {
+    function handle(
+        uint32 _origin,
+        bytes32 _sender,
+        bytes memory _message
+    ) external payable override {
         require(msg.sender == address(mailbox), "Sender must be mailbox");
 
-        (string memory functionName, bytes memory param) = abi.decode(_message, (string, bytes));
+        (string memory functionName, bytes memory param) = abi.decode(
+            _message,
+            (string, bytes)
+        );
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("updateUserCoverValue"))) {
-            (address user, uint256 coverId, uint256 claimPaid) = abi.decode(param, (address, uint256, uint256));
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("updateUserCoverValue"))
+        ) {
+            (address user, uint256 coverId, uint256 claimPaid) = abi.decode(
+                param,
+                (address, uint256, uint256)
+            );
             updateUserCoverValue(user, coverId, claimPaid);
         }
 
