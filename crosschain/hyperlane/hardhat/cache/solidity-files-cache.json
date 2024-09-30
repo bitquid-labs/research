@@ -38,8 +38,8 @@
       ]
     },
     "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\InsurancePool.sol": {
-      "lastModificationDate": 1727350286821,
-      "contentHash": "55a865e2050d6dffe8fa9b97981775a6",
+      "lastModificationDate": 1727693480608,
+      "contentHash": "f716c1b57c4071cfe13702613f46242a",
       "sourceName": "contracts/InsurancePool.sol",
       "solcConfig": {
         "version": "0.8.27",
@@ -377,8 +377,8 @@
       ]
     },
     "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\InsuranceCover.sol": {
-      "lastModificationDate": 1727373409137,
-      "contentHash": "3e7faf8aa3e21921eba805716ce2f35f",
+      "lastModificationDate": 1727693588730,
+      "contentHash": "a1fe39f5fc5c1271ec76b68a17f30cc8",
       "sourceName": "contracts/InsuranceCover.sol",
       "solcConfig": {
         "version": "0.8.27",
@@ -422,8 +422,8 @@
       ]
     },
     "C:\\Users\\Mr. OLA\\Documents\\bitquid\\research\\crosschain\\hyperlane\\hardhat\\contracts\\Gov.sol": {
-      "lastModificationDate": 1727420089218,
-      "contentHash": "3abd6f056336c8bb5d02d4bdba67af34",
+      "lastModificationDate": 1727693514646,
+      "contentHash": "da86405658de1413cf4b8ca4237ed9f6",
       "sourceName": "contracts/Gov.sol",
       "solcConfig": {
         "version": "0.8.27",

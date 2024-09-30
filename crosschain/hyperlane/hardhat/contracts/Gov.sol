@@ -9,7 +9,12 @@ import "./libraries/hyperlane/IMailbox.sol";
 import {IInterchainSecurityModule, ISpecifiesInterchainSecurityModule} from "./libraries/hyperlane/IInterchainSecurityModule.sol";
 import "./CoverLib.sol";
 
-contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainSecurityModule, Ownable {
+contract Governance is
+    ReentrancyGuard,
+    IMessageRecipient,
+    ISpecifiesInterchainSecurityModule,
+    Ownable
+{
     error VotingTimeElapsed();
 
     uint256 public proposalCounter;
@@ -18,10 +23,11 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
     IInterchainSecurityModule public interchainSecurityModule;
 
     mapping(uint256 => CoverLib.Proposal) public proposals;
-    mapping(address => mapping(uint256 => CoverLib.GenericCoverInfo)) public userCovers;
+    mapping(address => mapping(uint256 => CoverLib.GenericCoverInfo))
+        public userCovers;
     mapping(uint256 => mapping(address => CoverLib.Voter)) public voters;
     uint256[] public proposalIds;
-    mapping (uint256 => bool) poolStatus;
+    mapping(uint256 => bool) poolStatus;
 
     event ReceivedMessage(
         uint32 indexed origin,
@@ -44,7 +50,6 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
     );
     event ProposalExecuted(uint256 indexed proposalId, bool approved);
 
-
     IERC20 public governanceToken;
     IMailbox public mailbox;
     address public coverContract;
@@ -57,19 +62,24 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         address _insurancePool,
         uint256 _votingDuration,
         address _initialOwner,
-        uint256 _destinationDomain
+        uint32 _destinationDomain
     ) Ownable(_initialOwner) {
         mailbox = IMailbox(_mailbox);
         mailboxAddress = _mailbox;
         governanceToken = IERC20(_governanceToken);
         poolContract = _insurancePool;
         votingDuration = _votingDuration * 1 minutes;
-        destinationDomain = uint32(_destinationDomain);
+        destinationDomain = _destinationDomain;
     }
 
     function createProposal(CoverLib.ProposalParams memory params) external {
-        CoverLib.GenericCoverInfo memory userCover = userCovers[params.user][params.coverId];
-        require(params.claimAmount <= userCover.coverValue, "Not sufficient cover value for claim");
+        CoverLib.GenericCoverInfo memory userCover = userCovers[params.user][
+            params.coverId
+        ];
+        require(
+            params.claimAmount <= userCover.coverValue,
+            "Not sufficient cover value for claim"
+        );
         require(poolStatus[params.poolId], "Pool does not exist");
         require(params.claimAmount > 0, "Claim amount must be greater than 0");
 
@@ -103,11 +113,13 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         require(!voters[_proposalId][msg.sender].voted, "Already voted");
         CoverLib.Proposal storage proposal = proposals[_proposalId];
         require(proposal.createdAt != 0, "Proposal does not exist");
-        
+
         if (proposal.status == CoverLib.ProposalStaus.Submitted) {
             proposal.status = CoverLib.ProposalStaus.Pending;
             proposal.deadline = block.timestamp + votingDuration;
-            proposal.timeleft = (proposal.deadline - block.timestamp) / 1 minutes;
+            proposal.timeleft =
+                (proposal.deadline - block.timestamp) /
+                1 minutes;
         } else if (block.timestamp >= proposal.deadline) {
             proposal.timeleft = 0;
             revert VotingTimeElapsed();
@@ -132,9 +144,14 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         emit VoteCast(msg.sender, _proposalId, _vote, voterWeight);
     }
 
-    function executeProposal(uint256 _proposalId) external onlyOwner nonReentrant {
+    function executeProposal(
+        uint256 _proposalId
+    ) external payable onlyOwner nonReentrant {
         CoverLib.Proposal storage proposal = proposals[_proposalId];
-        require(proposal.status == CoverLib.ProposalStaus.Pending, "Proposal not pending");
+        require(
+            proposal.status == CoverLib.ProposalStaus.Pending,
+            "Proposal not pending"
+        );
         require(
             block.timestamp > proposal.deadline,
             "Voting period is still active"
@@ -143,17 +160,42 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         proposal.executed = true;
 
         if (proposal.votesFor > proposal.votesAgainst) {
-
             proposals[_proposalId].status = CoverLib.ProposalStaus.Approved;
 
-            mailbox.dispatch(uint32(destinationDomain), addressToBytes32(coverContract), abi.encode("updateUserCoverValue", abi.encode(
-                proposal.proposalParam.user,
-                proposal.proposalParam.coverId,
-                proposal.proposalParam.claimAmount
-            )));
+            bytes memory body1 = abi.encode(
+                "updateUserCoverValue",
+                abi.encode(
+                    proposal.proposalParam.user,
+                    proposal.proposalParam.coverId,
+                    proposal.proposalParam.claimAmount
+                )
+            );
+            uint256 fee1 = mailbox.quoteDispatch(
+                destinationDomain,
+                addressToBytes32(coverContract),
+                body1
+            );
+            mailbox.dispatch{value: fee1}(
+                destinationDomain,
+                addressToBytes32(coverContract),
+                body1
+            );
 
             CoverLib.Proposal memory mproposal = proposal;
-            mailbox.dispatch(uint32(destinationDomain), addressToBytes32(poolContract), abi.encode("approvedProposals", abi.encode(mproposal)));
+            bytes memory body2 = abi.encode(
+                "approvedProposals",
+                abi.encode(mproposal)
+            );
+            uint256 fee = mailbox.quoteDispatch(
+                destinationDomain,
+                addressToBytes32(poolContract),
+                body2
+            );
+            mailbox.dispatch{value: fee}(
+                destinationDomain,
+                addressToBytes32(poolContract),
+                body2
+            );
 
             emit ProposalExecuted(_proposalId, true);
         } else {
@@ -162,7 +204,9 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         }
     }
 
-    function updateProposalStatusToClaimed(uint256 proposalId) public onlyMailboxOrCoverContract nonReentrant {
+    function updateProposalStatusToClaimed(
+        uint256 proposalId
+    ) public onlyMailboxOrCoverContract nonReentrant {
         proposals[proposalId].status = CoverLib.ProposalStaus.Claimed;
     }
 
@@ -181,41 +225,69 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         if (block.timestamp >= proposals[_proposalId].deadline) {
             proposals[_proposalId].timeleft = 0;
         } else {
-            proposals[_proposalId].timeleft = (proposals[_proposalId].deadline - block.timestamp) / 1 minutes;
+            proposals[_proposalId].timeleft =
+                (proposals[_proposalId].deadline - block.timestamp) /
+                1 minutes;
         }
         return proposals[_proposalId];
     }
 
-    function getAllProposals() public view returns (CoverLib.Proposal[] memory) {
-        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](proposalIds.length);
+    function getAllProposals()
+        public
+        view
+        returns (CoverLib.Proposal[] memory)
+    {
+        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](
+            proposalIds.length
+        );
         for (uint256 i = 0; i < proposalIds.length; i++) {
             result[i] = proposals[proposalIds[i]];
             if (block.timestamp >= result[i].deadline) {
                 result[i].timeleft = 0;
             } else {
-                result[i].timeleft = (result[i].deadline - block.timestamp) / 1 minutes;
+                result[i].timeleft =
+                    (result[i].deadline - block.timestamp) /
+                    1 minutes;
             }
         }
         return result;
     }
 
-    function getActiveProposals() public view returns (CoverLib.Proposal[] memory) {
+    function getActiveProposals()
+        public
+        view
+        returns (CoverLib.Proposal[] memory)
+    {
         uint256 activeCount = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
-            if (proposals[proposalIds[i]].deadline == 0 || proposals[proposalIds[i]].deadline > block.timestamp) {
+            if (
+                proposals[proposalIds[i]].deadline == 0 ||
+                proposals[proposalIds[i]].deadline > block.timestamp
+            ) {
                 activeCount++;
             }
         }
 
-        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](activeCount);
+        CoverLib.Proposal[] memory result = new CoverLib.Proposal[](
+            activeCount
+        );
         uint256 index = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
-            if (proposals[proposalIds[i]].deadline == 0 || proposals[proposalIds[i]].deadline >= block.timestamp) {
+            if (
+                proposals[proposalIds[i]].deadline == 0 ||
+                proposals[proposalIds[i]].deadline >= block.timestamp
+            ) {
                 result[index] = proposals[proposalIds[i]];
-                if (block.timestamp == result[index].deadline || proposals[proposalIds[i]].status == CoverLib.ProposalStaus.Submitted) {
+                if (
+                    block.timestamp == result[index].deadline ||
+                    proposals[proposalIds[i]].status ==
+                    CoverLib.ProposalStaus.Submitted
+                ) {
                     result[index].timeleft = 0;
                 } else {
-                    result[index].timeleft = (result[index].deadline - block.timestamp) / 1 minutes;
+                    result[index].timeleft =
+                        (result[index].deadline - block.timestamp) /
+                        1 minutes;
                 }
                 index++;
             }
@@ -223,17 +295,29 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         return result;
     }
 
-    function getPastProposals() public view returns (CoverLib.Proposal[] memory) {
+    function getPastProposals()
+        public
+        view
+        returns (CoverLib.Proposal[] memory)
+    {
         uint256 pastCount = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
-            if (proposals[proposalIds[i]].status != CoverLib.ProposalStaus.Submitted && proposals[proposalIds[i]].deadline < block.timestamp) {
+            if (
+                proposals[proposalIds[i]].status !=
+                CoverLib.ProposalStaus.Submitted &&
+                proposals[proposalIds[i]].deadline < block.timestamp
+            ) {
                 pastCount++;
             }
         }
         CoverLib.Proposal[] memory result = new CoverLib.Proposal[](pastCount);
         uint256 index = 0;
         for (uint256 i = 0; i < proposalIds.length; i++) {
-            if (proposals[proposalIds[i]].status != CoverLib.ProposalStaus.Submitted && proposals[proposalIds[i]].deadline < block.timestamp) {
+            if (
+                proposals[proposalIds[i]].status !=
+                CoverLib.ProposalStaus.Submitted &&
+                proposals[proposalIds[i]].deadline < block.timestamp
+            ) {
                 result[index] = proposals[proposalIds[i]];
                 result[index].timeleft = 0;
                 index++;
@@ -256,7 +340,10 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
     }
 
     modifier onlyMailboxOrCoverContract() {
-        require(msg.sender == mailboxAddress || msg.sender == coverContract, "Not authorized");
+        require(
+            msg.sender == mailboxAddress || msg.sender == coverContract,
+            "Not authorized"
+        );
         _;
     }
 
@@ -264,7 +351,9 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
         return bytes32(uint256(uint160(_addr)));
     }
 
-    function setDestinationDomain(uint32 _destinationDomain) external onlyOwner {
+    function setDestinationDomain(
+        uint32 _destinationDomain
+    ) external onlyOwner {
         destinationDomain = _destinationDomain;
     }
 
@@ -274,38 +363,65 @@ contract Governance is ReentrancyGuard, IMessageRecipient, ISpecifiesInterchainS
 
     receive() external payable {}
 
-    function handle(uint32 _origin, bytes32 _sender, bytes memory _message) external payable virtual override {
+    function handle(
+        uint32 _origin,
+        bytes32 _sender,
+        bytes memory _message
+    ) external payable virtual override {
         require(msg.sender == address(mailbox), "Sender must be mailbox");
 
-        (string memory functionName, bytes memory param) = abi.decode(_message, (string, bytes));
+        (string memory functionName, bytes memory param) = abi.decode(
+            _message,
+            (string, bytes)
+        );
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("getProposalDetails"))) {
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("getProposalDetails"))
+        ) {
             uint256 proposalId = abi.decode(param, (uint256));
             getProposalDetails(proposalId);
         }
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("updateProposalStatusToClaimed"))) {
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("updateProposalStatusToClaimed"))
+        ) {
             uint256 proposalId = abi.decode(param, (uint256));
             updateProposalStatusToClaimed(proposalId);
         }
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("PoolActive"))) {
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("PoolActive"))
+        ) {
             uint256 poolId = abi.decode(param, (uint256));
             poolStatus[poolId] = true;
         }
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("PoolDeactivated"))) {
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("PoolDeactivated"))
+        ) {
             uint256 poolId = abi.decode(param, (uint256));
             poolStatus[poolId] = false;
         }
 
-        if (keccak256(abi.encodePacked(functionName)) == keccak256(abi.encodePacked("UserCover"))) {
-            (address user, uint256 coverId, CoverLib.GenericCoverInfo memory coverInfo) = abi.decode(param, (address, uint256, CoverLib.GenericCoverInfo));
+        if (
+            keccak256(abi.encodePacked(functionName)) ==
+            keccak256(abi.encodePacked("UserCover"))
+        ) {
+            (
+                address user,
+                uint256 coverId,
+                CoverLib.GenericCoverInfo memory coverInfo
+            ) = abi.decode(
+                    param,
+                    (address, uint256, CoverLib.GenericCoverInfo)
+                );
             userCovers[user][coverId] = coverInfo;
         }
 
         emit ReceivedMessage(_origin, _sender, string(_message));
     }
 }
-
-// 7cf14cea97ee9ace52e647f282686ef9bd32c5fd686272190520289905885293
