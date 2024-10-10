@@ -29,3 +29,7 @@ Use a distributed key generator to generate keys which would be managed by the s
 - **Signing Cross Chain Txs**
 
 When your canister needs to interact with a smart contract on another blockchain (like Ethereum), it sends a request for signature to the nodes in the subnet which then uses threshold ECDSA to generate a valid signature, which can be used to sign a transaction or message intended for the other blockchain. This signature can be verified on the other chain just like any other standard cryptographic signature.
+
+## Chain Fusion
+
+Chain Fusion uses the chain key technology to allow ICP to connect with multiple blockchains without the use of bridges.
