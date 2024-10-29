@@ -33,3 +33,30 @@ When your canister needs to interact with a smart contract on another blockchain
 ## Chain Fusion
 
 Chain Fusion uses the chain key technology to allow ICP to connect with multiple blockchains without the use of bridges.
+
+# Implementation of existing Canisters on ICP
+
+## Modules
+
+- Cover Canister
+- Pool Canister
+- Governance Canister
+- Token Canister
+
+## Architectural Diagram
+
+![ICP Canisters Architectural Diagram](https://brown-high-badger-463.mypinata.cloud/ipfs/QmYB9nPsfP1PEtz71L117zXwpAughVSAi48BZcHWiKuVGW)
+
+The BQ Insurance Protocol would leverage ICP as the main infrastructure for managing governance, token, and liquidity pool operations, while the protocol's cover contract is deployed across multiple Bitcoin Layer 2 (L2) networks to provide users with the ability to purchase insurance covers on different networks.
+
+### ICP Canisters
+
+- Governance Canister: Handles the administrative control and management of governance proposals within the protocol.
+- Token Canister: Manages the protocol's tokens.
+- Pool Canister: Responsible for liquidity management and insurance claim payouts.
+
+These three canisters interact with each other within the ICP ecosystem and will leverage ICP’s ic_cdk (Canister Development Kit) for smooth inter-canister communication and state sharing.
+
+### Cross Chain Communication
+
+The Cover contract/ canister would be deployed across Bitcoin L2s to allow users purhase covers on different networks. The communcation between these contracts and the BQ protocol on ICP would be achieved using ICP's Chain Key Technology.
