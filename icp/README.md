@@ -6,8 +6,6 @@
 
 Canisters are ICP's version of smart contracts. Canisters are implemented as WebAssembly modules. This allows for maximum interoperability, as developers can write canisters in a variety of languages that target WebAssembly.
 
-- Bifinity EVM allows Ethereum developers to deploy smart contracts for bicoin written in solidity. [Docs](https://docs.bitfinity.network/)
-
 ## Chain Key Technology
 
 ### Chain Key Cryptography
